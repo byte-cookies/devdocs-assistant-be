@@ -1,4 +1,5 @@
-# app/services/check_url.py
+# services/check_url.py
+# 크롤링 가능한 URL인지 판단하는 함수
 
 from typing import Optional
 import httpx
