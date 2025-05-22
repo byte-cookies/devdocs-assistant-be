@@ -1,8 +1,10 @@
 from fastapi import FastAPI
-from routers import crawler
+from routers import crawler, rag_router
+
 
 app = FastAPI(title="Webcrawler API")
 app.include_router(crawler.router)
+app.include_router(rag_router.router)
 
 @app.get("/")
 def root():
