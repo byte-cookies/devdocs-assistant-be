@@ -1,4 +1,5 @@
 from langchain.text_splitter import CharacterTextSplitter
+from datetime import datetime
 from langchain.docstore.document import Document
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
@@ -36,7 +37,9 @@ def embed_split_text(text: str, url: str):
     print(f"[INFO] URL: {url}")
     print(f"[INFO] 텍스트 분할 개수: {len(chunks)}")
 
-    docs = [Document(page_content=chunk, metadata={"source": url}) for chunk in chunks]
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    docs = [Document(page_content=chunk, metadata={"source": url, "timestamp": now}) for chunk in chunks]
 
     vectordb.add_documents(docs)
     vectordb.persist()
