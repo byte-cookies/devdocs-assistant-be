@@ -19,11 +19,11 @@ async def extract_text_from_url(url: str) -> str:
 
         text = main_content.get_text(separator="\n", strip=True) if main_content else soup.get_text(separator="\n", strip=True)
 
-        if len(text.strip()) < 100:  # ✅ 동적 페이지 가능성 판단 기준
+        if len(text.strip()) < 100:  # 동적 페이지 가능성 판단 기준
             raise ValueError("Too little content, fallback to dynamic extraction.")
 
         return text
 
     except Exception:
-        # ✅ fallback: Playwright로 재시도
+        # callback: Playwright로 재시도
         return await extract_dynamic_page_text(url)

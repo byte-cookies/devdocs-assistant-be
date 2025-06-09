@@ -5,21 +5,34 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
 import os
+import json
+from pathlib import Path
 
 load_dotenv()
 
 # 전역에서 한 번만 생성
 embedding_model = OpenAIEmbeddings()
 vectordb = Chroma(persist_directory="./vectorstore", embedding_function=embedding_model)
+URL_INDEX_PATH = Path("./indexes_urls.json")
 
-# url 중복 확인
+# === URL 인덱스 로드 ===
+def load_url_index() -> set:  
+    if URL_INDEX_PATH.exists():
+        with open(URL_INDEX_PATH, "r", encoding="utf-8") as f:
+            return set(json.load(f))
+    return set()
+
+# === URL 인덱스 저장 ===
+def save_url_index(indexed_urls: set): 
+    with open(URL_INDEX_PATH, "w", encoding="utf-8") as f:
+        json.dump(sorted(indexed_urls), f, ensure_ascii=False, indent=2)    
+
+# === URL 중복 검사 (중복 -> true) ===
 def is_url_already_embedded(url: str) -> bool:
-    results = vectordb.similarity_search("url_check_dummy", k=20)
-    for doc in results:
-        if doc.metadata.get("source") == url:
-            return True
-    return False
+    indexed_urls = load_url_index()
+    return url in indexed_urls
 
+# === 텍스트 분할 ===
 def split_text(text: str, chunk_size=1200, chunk_overlap=200):
     splitter = CharacterTextSplitter(
         separator="\n",
@@ -28,9 +41,15 @@ def split_text(text: str, chunk_size=1200, chunk_overlap=200):
     )
     return splitter.split_text(text)
 
+
+# === 임베딩 및 저장
 def embed_split_text(text: str, url: str):
     if not text.strip():
         print("빈 텍스트입니다. 저장을 생략합니다.")
+        return
+
+    if is_url_already_embedded(url):
+        print(f"[SKIP] 이미 저장된 URL입니다: {url}")
         return
 
     chunks = split_text(text)
@@ -43,3 +62,7 @@ def embed_split_text(text: str, url: str):
 
     vectordb.add_documents(docs)
     vectordb.persist()
+
+    indexed_urls = load_url_index()
+    indexed_urls.add(url)           # Set배열에 url 추가
+    save_url_index(indexed_urls)
