@@ -36,7 +36,9 @@ async def ingest_from_url(request: URLRequest):
     
     try:
         text = await extract_text_from_url(request.url)
-        embed_split_text(text, request.url)
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        embed_split_text(text, request.url, metadata={"timestamp": timestamp})
 
         return {
             "success": True,
@@ -61,6 +63,7 @@ def list_documents(limit: int = Query(5, ge=1, le=100)):
     for doc in docs:
         results.append({
             "source": doc.metadata.get("source", "unknown"),
+            "timestamp": doc.metadata.get("timestamp", "unknown"),
             "preview": doc.page_content[:300]  # 앞부분 300자만 표시
         })
 

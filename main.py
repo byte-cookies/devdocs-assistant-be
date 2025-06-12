@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from routers import crawler, rag_router
 
 
-app = FastAPI(title="Webcrawler API")
+app = FastAPI(title="WhyNot Squad API",)
 app.include_router(crawler.router)
 app.include_router(rag_router.router)
 
